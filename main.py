@@ -1,42 +1,70 @@
 from tkinter import *
 import random
 
-
+#the dimensions of your screen
 gameWidth=600
 gameHeight=600
+#higher number will make you snake go faster
+#Sets the delay (in milliseconds) between game updates (or frames). Lower values make the snake move faster.
 speed=500
+#this will change the size of the snake
 spaceSize=50
+#inital size of the snake
 bodyParts=3
+#color of the food
 foodColor='#eb4034'
+#color of the snake
 snakeColor="#069116"
+#color of the background
 backColor='#000000'
 
+#Snake class
 class Snake:
+    #creating a new object
+    #initilizes a new snake
     def __init__(self):
         self.body_size=bodyParts
+        #stores the coordinates of the snakes segments
+        # A list that will store each segment’s coordinates, starting with each segment at (0,0) initially.
         self.coordinates=[]
+        #holds the reference to the rectangles that make up the snake
         self.squares=[]
 
+        #need more explanation
         for i in range(0, bodyParts):
+            #add inital parts of the body
             self.coordinates.append([0,0])
 
+        #Adds each segment's coordinates (initially [0, 0]), placing them at the top-left corner.
         for x,y in self.coordinates:
+            #each of the rectangles is drawn here
             square=canvas.create_rectangle(x,y, x+spaceSize, y+spaceSize, fill=snakeColor, tag="snake")
             self.squares.append(square)
 
 class Food:
-    #food object
+    #food object. initilize food
     def __init__(self):
-        x=random.randint(0, int((gameWidth/spaceSize)-1))*spaceSize
+        #makes the foods position at randion locations within the screen also it make sures the values
+        #are intergers
+        #This gives the number of potential grid cells in the horizontal and vertical directions.
+        #By subtracting 1, the random value stays within the grid cells and does not exceed the game boundary.
+        # * spaceSize Converts it to pixel coordinates
+        x=random.randint(0, int((gameWidth/spaceSize)-1))*spaceSize 
         y=random.randint(0, int((gameHeight/spaceSize)-1))*spaceSize
 
+        #set the coordinates of the food
         self.coordinates =[x,y]
 
+        #then draw that on the screen
+        #set coordinates and specify the sizes
         canvas.create_oval(x,y, x+spaceSize, y+spaceSize, fill=foodColor, tag="food")
 
 def next_turn(snake, food):
+    #the x and y we will use later on
     x, y=snake.coordinates[0]
 
+    #changing the direction of the snake based of the 
+    #Adjusts the head position of the snake based on the current direction.
     if direction =="up":
         y-=spaceSize
     elif direction == "down":
@@ -46,12 +74,20 @@ def next_turn(snake, food):
     elif direction == "right":
         x+=spaceSize
 
+    
+    #Inserts the new head position at the front of the coordinates list.
+    #This makes the first segment of the snake move to this new position, while the rest of the segments shift to follow the head.
     snake.coordinates.insert(0,(x,y))
     
-
+    #Creates a rectangle at the new head position and adds it to the squares list.
+    #A new square is created on the canvas at the updated position of the head
     square=canvas.create_rectangle(x,y, x+spaceSize, y+spaceSize, fill=snakeColor)
     snake.squares.insert(0, square)
 
+
+
+    #    Creates a rectangle at the new head position and adds it to the squares list.
+    # Checks if the snake's head coordinates match the food coordinates. If they match, the score is increased, and a new food item is created. If not, the tail of the snake is removed, maintaining the same length.
     if x== food.coordinates[0] and y==food.coordinates[1]:
         global score
 
@@ -60,17 +96,23 @@ def next_turn(snake, food):
         canvas.delete("food")
         food=Food()
     else:
+        #If the snake did not eat food, the last segment (tail) is removed:
         del snake.coordinates[-1]
         canvas.delete(snake.squares[-1])
         del snake.squares[-1]
 
+    #Calls check_coll() to see if the snake has collided with itself or the borders of the window. If so, game_over() is called.
     if check_coll(snake):
         game_over()
     else:
+        #Uses window.after() to call next_turn again after the specified speed.
+        #At the end of next_turn, the function calls itself with a delay set by the speed variable:
+        #This creates a continuous loop where next_turn updates the snake’s position at regular intervals, making it appear as though the snake is moving forward automatically.
         window.after(speed, next_turn, snake, food)
 
 
 def change_dir(new_direction):
+    #Changes the direction of the snake based on key presses, ensuring the snake cannot reverse direction directly (e.g., it can't go left if it's currently going right).
     global direction
 
     if new_direction =="left":
@@ -91,7 +133,7 @@ def change_dir(new_direction):
 
 def check_coll(snake):
     x,y=snake.coordinates[0]
-
+    #Checks if the snake's head goes out of bounds (negative coordinates or exceeding the width/height).
     if x<0 or x>=gameWidth:
         #print("Game Over")
         return True
@@ -99,13 +141,14 @@ def check_coll(snake):
     elif y<0 or y>=gameHeight:
         #print("Game Over")
         return True
-
+    #Iterates through the rest of the snake's body to check if the head has collided with any part of its own body
     for body_part in snake.coordinates[1:]:
         if x== body_part[0] and y == body_part[1]:
             return True
 
     return False
 
+#Clears the canvas and displays a "Game Over" message in the center of the window.
 def game_over():
     canvas.delete(ALL)
     canvas.create_text(canvas.winfo_width()/2, canvas.winfo_height()/2, font=('consolas', 70), text="Game Over", fill="red", tag="gameover")
@@ -115,6 +158,8 @@ window.title("Snake Game")
 window.resizable(False,False)
 
 score=0
+
+#by default the snake moves downward since that what we set here 
 direction='down'
 
 label=Label(window, text="Score:{}".format(score),font=('consolas',40))
