@@ -48,6 +48,16 @@ player_surf=pygame.image.load('Runner\graphics\Player\player_walk_1.png').conver
 #player_rect=player_surf.get_rect(midLeft= (80,200))
 
 snail_x_pos=600
+snail_y_pos=270
+vel=3
+
+
+jumping = False
+
+#gravity must be divisible by jump height
+Y_Gravity=1
+JumpHeight=20
+Y_velocity=JumpHeight
 
 while True:
     #show it running
@@ -74,14 +84,52 @@ while True:
     screen.blit(text_surface, (300,50))
     #show snail moving the right
     #if - then it moves left
-    snail_x_pos -=1
+    
+    #stores keys pressed
+    # creating a new dictornary
+    keys=pygame.key.get_pressed()
+
+    #if left arrow key is pressed
+    if keys[pygame.K_LEFT] and x>0:
+        snail_x_pos -=vel
+    
+    # if left arrow key is pressed 
+    if keys[pygame.K_RIGHT] and x<500-width: 
+          
+        # increment in x co-ordinate 
+        snail_x_pos += vel 
+         
+    # if left arrow key is pressed    
+    if keys[pygame.K_UP] and y>0: 
+        jumping=True
+    
+    if keys[pygame.K_SPACE] and y>0: 
+        jumping=True
+
+    if jumping:
+        #subtracting actually moves it up
+        snail_y_pos -=Y_velocity
+        #bring it down
+        Y_velocity -= Y_Gravity
+
+        #Y_velocity increases jump up
+        #Y_velocity decreases as you come down
+
+        if Y_velocity < -JumpHeight:
+            jumping=False
+            Y_velocity=JumpHeight
+          
+    # if left arrow key is pressed    
+    #if keys[pygame.K_DOWN] and y<500-height: 
+        # increment in y co-ordinate 
+     #   snail_x_pos -= vel 
 
     #now it goes of the screen
     #show the snail reappreaing
     if snail_x_pos<-100: snail_x_pos=800
 
     #show the snail static
-    screen.blit(snail_surface,(snail_x_pos, 270))
+    screen.blit(snail_surface,(snail_x_pos, snail_y_pos))
     #screen.blit(snail_surface, player_rect)
 
     #updates everything
